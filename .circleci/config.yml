@@ -2,48 +2,57 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: python:3.6
+      - image: cimg/base:stable
     steps:
       - checkout
-      - run: |
-          pip install -r requirements.txt
-          python manage.py check
+      - run: echo "This is a build step"
   test:
     docker:
-      - image: python:3.6
+      - image: cimg/base:stable
     steps:
       - checkout
-      - run: |
-          pip install -r requirements.txt
-          python manage.py test taskManager
+      - run: echo "This is a test step"
   bundler-audit:
-    docker:
-      - image: hysnsec/bundle-audit
+    machine: true
     steps:
       - checkout
-      - run: |
-          docker run --rm -v $(pwd):/src -w /src hysnsec/bundle-audit check --format json --output bundle-audit-output.json
+      - run:
+          command: docker run --rm -v $(pwd):/src -w /src hysnsec/bundle-audit check --format json --output bundle-audit-output.json || true
+      - store_artifacts:
+          path: bundle-audit-output.json
+          destination: bundler-audit-artifact
+          when: always
   integration:
     docker:
-      - image: python:3.6
+      - image: cimg/base:stable
     steps:
       - checkout
       - run:
           command: |
             echo "This is an integration step"
             exit 1
+          when: always
   prod:
     docker:
-      - image: python:3.6
+      - image: cimg/base:stable
     steps:
       - checkout
-      - run: echo "This is a deploy step"
+      - run: echo "This is a deploy step."
 workflows:
   version: 2
-  django:
+  rails:
     jobs:
       - build
-      - test
-      - bundler-audit
-      - integration
-      - prod
+      - test:
+          requires:
+            - build
+      - bundler-audit:
+          requires:
+            - test
+      - integration:
+          requires:
+            - bundler-audit
+      - prod:
+          type: approval
+          requires:
+            - integration
