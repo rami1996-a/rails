@@ -16,6 +16,13 @@ jobs:
       - run: |
           pip install -r requirements.txt
           python manage.py test taskManager
+  bundler-audit:
+    docker:
+      - image: hysnsec/bundle-audit
+    steps:
+      - checkout
+      - run: |
+          docker run --rm -v $(pwd):/src -w /src hysnsec/bundle-audit check --format json --output bundle-audit-output.json
   integration:
     docker:
       - image: python:3.6
@@ -37,5 +44,6 @@ workflows:
     jobs:
       - build
       - test
+      - bundler-audit
       - integration
       - prod
