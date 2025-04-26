@@ -1,14 +1,14 @@
+version: 2.1
 jobs:
   build:
     docker:
-      - image: python:3.6                   # similar to "image" in GitLab
+      - image: python:3.6
     steps:
       - checkout
-      - run: |                              # similar to "script" in GitLab
+      - run: |
           pip install -r requirements.txt
           python manage.py check
-
-  test: 
+  test:
     docker:
       - image: python:3.6
     steps:
@@ -16,7 +16,6 @@ jobs:
       - run: |
           pip install -r requirements.txt
           python manage.py test taskManager
-
   integration:
     docker:
       - image: python:3.6
@@ -26,14 +25,12 @@ jobs:
           command: |
             echo "This is an integration step"
             exit 1
-
   prod:
     docker:
       - image: python:3.6
     steps:
       - checkout
       - run: echo "This is a deploy step"
-
 workflows:
   version: 2
   django:
